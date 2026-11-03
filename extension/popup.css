@@ -1,0 +1,82 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+body {
+  width: 320px;
+  margin: 0;
+}
+
+main {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+input,
+select,
+button {
+  box-sizing: border-box;
+  min-height: 34px;
+  font: inherit;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 6px 8px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.checkbox-row input {
+  width: auto;
+  min-height: auto;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  flex: 1;
+  border: 0;
+  border-radius: 6px;
+  padding: 7px 10px;
+  color: white;
+  background: #6d28d9;
+  cursor: pointer;
+}
+
+button.secondary {
+  color: inherit;
+  background: color-mix(in srgb, CanvasText 12%, Canvas);
+}
+
+output {
+  min-height: 18px;
+  font-size: 12px;
+}
+
+.note {
+  margin: 0;
+  color: color-mix(in srgb, CanvasText 65%, Canvas);
+  font-size: 11px;
+  line-height: 1.4;
+}

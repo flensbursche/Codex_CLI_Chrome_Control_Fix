@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Codex CLI Controlled Tab Grouper",
+  "version": "1.0.0",
+  "description": "Groups externally controlled Chrome tabs so they stay visible in busy browser windows.",
+  "permissions": [
+    "alarms",
+    "debugger",
+    "storage",
+    "tabGroups"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_title": "Codex CLI controlled tabs",
+    "default_popup": "popup.html"
+  }
+}

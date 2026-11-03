@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Codex CLI controlled tabs</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Codex CLI tabs</h1>
+      <label for="group-title">Group / session title</label>
+      <input id="group-title" maxlength="80" placeholder="Codex CLI · Project" />
+      <label for="group-color">Group color</label>
+      <select id="group-color">
+        <option value="purple">Purple</option>
+        <option value="blue">Blue</option>
+        <option value="cyan">Cyan</option>
+        <option value="green">Green</option>
+        <option value="yellow">Yellow</option>
+        <option value="orange">Orange</option>
+        <option value="red">Red</option>
+        <option value="pink">Pink</option>
+        <option value="grey">Grey</option>
+      </select>
+      <label class="checkbox-row">
+        <input id="collapsed" type="checkbox" />
+        Collapse group after grouping
+      </label>
+      <div class="actions">
+        <button id="save" type="button">Save & scan</button>
+        <button id="scan" type="button" class="secondary">Scan now</button>
+      </div>
+      <output id="status" aria-live="polite">Ready.</output>
+      <p class="note">
+        Chrome does not expose the debugger client name. Every externally attached page is grouped.
+      </p>
+    </main>
+    <script src="grouping.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
