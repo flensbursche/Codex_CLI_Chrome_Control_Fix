@@ -5,6 +5,7 @@ This project connects a coding agent to a real, signed-in browser profile. Treat
 ## Security properties
 
 - The recommended MCP configuration disables usage statistics, CrUX lookups, and JavaScript-evaluation tools.
+- The portable local plugin starts the pinned `chrome-devtools-mcp@1.12.0` package through `npx`; review `mcp.json` and the pinned upstream package before installation. The plugin requires local execution and does not bundle Node.js, npm, Chrome, or the MCP package itself.
 - The tab-grouping extension declares no host permissions and injects no scripts into websites.
 - The extension uses `chrome.debugger.getTargets()` only to identify externally attached page targets. It does not attach, read page content, or send DevTools commands.
 - The extension remembers its own group IDs only for the current browser session and does not claim unrelated user groups that happen to use the same title or receive a reused ID later.

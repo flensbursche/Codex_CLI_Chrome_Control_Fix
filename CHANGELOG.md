@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 - 2026-11-03
+
+- Add a portable Agent Plugins manifest and pinned local stdio MCP configuration.
+- Declare the required `chrome-devtools` MCP dependency in the skill metadata.
+- Add six activation, ambiguity, exclusion, dependency, and safety evaluation cases.
+- Add deterministic tests that keep plugin identity, MCP flags, skill metadata, and eval coverage aligned.
+- Add a reproducible plugin ZIP packager with a SHA-256 readback.
+
 ## 1.0.1 - 2026-11-03
 
 - Reuse only tab groups created by the extension in the current browser session, preventing collisions with same-titled user groups and stale group IDs.

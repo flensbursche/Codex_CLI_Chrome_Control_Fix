@@ -7,7 +7,7 @@ The browser access host is unavailable
 Computer Use native pipe is unavailable
 ```
 
-This project does **not** patch or replace Codex. It adds the official Chrome DevTools MCP server to Codex CLI and offers two visible-tab workflows: an immediate manual grouping fallback that needs no extension, and a companion extension for automatic grouping after policy approval. The current project and extension version is `1.0.1`.
+This project does **not** patch or replace Codex. It adds the official Chrome DevTools MCP server to Codex CLI and offers two visible-tab workflows: an immediate manual grouping fallback that needs no extension, and a companion extension for automatic grouping after policy approval. The current project/plugin version is `1.1.0`; the companion Chrome extension version is `1.0.1`.
 
 ## What it solves
 
@@ -68,6 +68,16 @@ npm run check
 
 The repository includes the auto-discoverable skill `chrome-devtools-control`. It teaches new Codex sessions to try the configured MCP path before declaring browser access unavailable.
 
+For a self-contained local plugin artifact that bundles the skill metadata and pinned stdio MCP command:
+
+```powershell
+npm run package:plugin
+```
+
+The resulting `dist/codex-cli-chrome-control-plugin-v1.1.0.zip` uses the portable Agent Plugins layout (`plugin.json`, `mcp.json`, and `skills/`) and requires a local executor with Node.js/npm available. The package does not include Chrome, Node.js, or `chrome-devtools-mcp`; `npx` downloads the pinned MCP package when the plugin starts. Chrome still requires the user's connection approval.
+
+The following skill-only installation remains available when MCP configuration is managed separately:
+
 Preview the user-local installation:
 
 ```powershell
@@ -81,6 +91,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install-skill.ps1 -Apply
 ```
 
 Restart Codex CLI afterward so the new skill and MCP tools are discovered. Use `-Force` together with `-Apply` only to update an existing installation from a reviewed checkout.
+
+The skill declares its `chrome-devtools` MCP dependency in `agents/openai.yaml`. Six representative evaluation cases cover direct and indirect activation, ambiguous input, non-activation, missing tools, and enterprise-policy boundaries.
 
 ### 2. Check and install the Codex MCP entry
 

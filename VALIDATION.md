@@ -34,6 +34,17 @@ Validated locally on Windows 11 with Node.js 24.14.1 and Chrome Stable 156.0.807
 - SHA-256: `7515e6ce1925d30912192ed9c8a3a524807c07fb9c26cd08da03919935e7b77b`.
 - `git diff --check` passed with no whitespace errors.
 
+## Version 1.1.0 skill and plugin validation
+
+- The bundled Skill Creator validator reported `Skill is valid!`.
+- Twelve repository tests passed, including four plugin/skill configuration tests.
+- Six structured skill evaluation cases cover direct activation, indirect activation, ambiguous input, non-activation, policy safety, and missing MCP tools.
+- `agents/openai.yaml` declares the `chrome-devtools` stdio MCP dependency.
+- `plugin.json` and `mcp.json` use the portable Agent Plugins layout and require local execution.
+- The packaged plugin contained exactly the skill bundle, `plugin.json`, `mcp.json`, and `LICENSE`.
+- Release artifact: `dist/codex-cli-chrome-control-plugin-v1.1.0.zip`.
+- SHA-256: `3b4733b68b60186bb726ddbbe05e2604f125724039d2b7a3758b407805b4cb7e`.
+
 ## Environment-specific automatic-path blocker
 
 The live extension grouping smoke could not run on the validation workstation because enterprise policy correctly rejected unpacked extension installation:
