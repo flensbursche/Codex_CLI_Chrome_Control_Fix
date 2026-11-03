@@ -109,7 +109,23 @@ If the switch is unavailable, inspect `chrome://policy` and the machine policy:
 Get-ItemProperty 'HKLM:\SOFTWARE\Policies\Google\Chrome' -Name RemoteDebuggingAllowed
 ```
 
-`RemoteDebuggingAllowed = 0` blocks auto-connect and `--remote-debugging-port`. Ask the responsible administrator to enable the policy. Do not bypass enterprise policy locally.
+The effective Windows policy is a `REG_DWORD` at:
+
+```text
+HKLM\SOFTWARE\Policies\Google\Chrome\RemoteDebuggingAllowed
+```
+
+On an endpoint that you are explicitly authorized to administer, an elevated PowerShell can create or enable it with:
+
+```powershell
+$chromePolicy = 'HKLM:\SOFTWARE\Policies\Google\Chrome'
+New-Item -Path $chromePolicy -Force | Out-Null
+New-ItemProperty -Path $chromePolicy -Name RemoteDebuggingAllowed -PropertyType DWord -Value 1 -Force
+```
+
+Then close all Chrome windows, start Chrome again, open `chrome://policy`, choose **Reload policies**, and verify `RemoteDebuggingAllowed = true`. Chrome still requires explicit approval when an agent connects.
+
+`RemoteDebuggingAllowed = 0` blocks both auto-connect and `--remote-debugging-port`. Domain GPO or MDM may overwrite a local value; in that case the responsible administrator must change the managed policy. Do not alter `ExtensionInstallBlocklist`, `ExtensionInstallAllowlist`, `ExtensionInstallForcelist`, or `BlockExternalExtensions` as a workaround. This registry value enables the DevTools connection only; it does not install the grouping extension.
 
 ### 4A. Use the immediate manual grouping fallback
 
