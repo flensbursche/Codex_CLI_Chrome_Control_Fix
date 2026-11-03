@@ -64,6 +64,24 @@ cd Codex_CLI_Chrome_Control_Fix
 npm test
 ```
 
+### 1A. Install the reusable Codex skill
+
+The repository includes the auto-discoverable skill `chrome-devtools-control`. It teaches new Codex sessions to try the configured MCP path before declaring browser access unavailable.
+
+Preview the user-local installation:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install-skill.ps1
+```
+
+Apply it explicitly:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install-skill.ps1 -Apply
+```
+
+Restart Codex CLI afterward so the new skill and MCP tools are discovered. Use `-Force` together with `-Apply` only to update an existing installation from a reviewed checkout.
+
 ### 2. Check and install the Codex MCP entry
 
 The setup is dry-run by default:

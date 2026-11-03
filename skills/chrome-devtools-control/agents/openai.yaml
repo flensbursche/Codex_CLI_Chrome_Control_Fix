@@ -1,0 +1,4 @@
+interface:
+  display_name: "Chrome DevTools Control"
+  short_description: "Control Chrome when native browser access fails"
+  default_prompt: "Use $chrome-devtools-control to open and verify this page in my existing Chrome session."
