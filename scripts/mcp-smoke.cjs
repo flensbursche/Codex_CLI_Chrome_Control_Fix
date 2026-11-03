@@ -1,6 +1,10 @@
 const { spawn } = require("child_process");
 
 const version = process.env.CHROME_DEVTOOLS_MCP_VERSION || "1.12.0";
+if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) {
+  throw new Error(`Invalid CHROME_DEVTOOLS_MCP_VERSION: ${version}`);
+}
+
 const child = spawn(
   process.platform === "win32" ? "C:\\Windows\\System32\\cmd.exe" : "npx",
   process.platform === "win32"
@@ -18,21 +22,38 @@ const child = spawn(
         "--no-performance-crux",
         "--no-javascript-evaluation",
       ],
-  { stdio: ["pipe", "pipe", "pipe"] },
+  { stdio: ["pipe", "pipe", "pipe"], windowsHide: true },
 );
 
 let buffer = "";
 let completed = false;
+let timeout = null;
 
 function send(message) {
+  if (completed || !child.stdin.writable) return;
   child.stdin.write(`${JSON.stringify(message)}\n`);
+}
+
+function stopChild() {
+  if (!child.pid || child.exitCode !== null || child.killed) return;
+  if (process.platform === "win32") {
+    const killer = spawn("taskkill.exe", ["/pid", String(child.pid), "/t", "/f"], {
+      stdio: "ignore",
+      windowsHide: true,
+    });
+    killer.unref();
+  } else {
+    child.kill("SIGTERM");
+  }
 }
 
 function finish(code, result) {
   if (completed) return;
   completed = true;
+  if (timeout) clearTimeout(timeout);
   console.log(JSON.stringify(result, null, 2));
-  child.kill();
+  child.stdin.end();
+  stopChild();
   process.exitCode = code;
 }
 
@@ -76,6 +97,11 @@ child.stdout.on("data", (data) => {
   }
 });
 
+timeout = setTimeout(
+  () => finish(1, { status: "fail", reason: "timeout_waiting_for_chrome" }),
+  30_000,
+);
+
 send({
   jsonrpc: "2.0",
   id: 1,
@@ -83,8 +109,6 @@ send({
   params: {
     protocolVersion: "2025-06-18",
     capabilities: {},
-    clientInfo: { name: "codex-cli-chrome-control-smoke", version: "1.0.0" },
+    clientInfo: { name: "codex-cli-chrome-control-smoke", version: "1.0.1" },
   },
 });
-
-setTimeout(() => finish(1, { status: "fail", reason: "timeout_waiting_for_chrome" }), 30_000);

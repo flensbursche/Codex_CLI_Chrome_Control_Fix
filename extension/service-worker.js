@@ -1,6 +1,7 @@
-importScripts("grouping.js");
+importScripts("grouping.js", "scanner.js");
 
-const { DEFAULT_SETTINGS, normalizeSettings, attachedPageTabs } = CodexTabGrouping;
+const { DEFAULT_SETTINGS, normalizeSettings } = CodexTabGrouping;
+const { performScan } = CodexTabScanner;
 const SCAN_ALARM = "codex-controlled-tab-scan";
 const SCAN_PERIOD_MINUTES = 0.5;
 let scanPromise = null;
@@ -10,60 +11,14 @@ async function loadSettings() {
   return normalizeSettings(await chrome.storage.sync.get(DEFAULT_SETTINGS));
 }
 
-async function findOrCreateGroup(windowId, tabIds, settings) {
-  const groups = await chrome.tabGroups.query({ windowId });
-  const existing = groups.find((group) => group.title === settings.groupTitle);
-  const options = existing
-    ? { groupId: existing.id, tabIds }
-    : { createProperties: { windowId }, tabIds };
-  const groupId = await chrome.tabs.group(options);
-  await chrome.tabGroups.update(groupId, {
-    title: settings.groupTitle,
-    color: settings.groupColor,
-    collapsed: settings.collapsed,
-  });
-  return groupId;
-}
-
-async function performScan() {
+async function scanChrome() {
   const settings = await loadSettings();
-  const targets = await chrome.debugger.getTargets();
-  const attachedTabIds = attachedPageTabs(targets);
-  const tabs = await Promise.all(
-    attachedTabIds.map(async (tabId) => {
-      try {
-        return await chrome.tabs.get(tabId);
-      } catch {
-        return null;
-      }
-    }),
-  );
-
-  const tabsByWindow = new Map();
-  for (const tab of tabs.filter(Boolean)) {
-    if (!tabsByWindow.has(tab.windowId)) tabsByWindow.set(tab.windowId, []);
-    tabsByWindow.get(tab.windowId).push(tab.id);
-  }
-
-  const groupIds = [];
-  for (const [windowId, tabIds] of tabsByWindow) {
-    groupIds.push(await findOrCreateGroup(windowId, tabIds, settings));
-  }
-
-  const status = {
-    checkedAt: new Date().toISOString(),
-    attachedTabCount: attachedTabIds.length,
-    groupedTabCount: tabs.filter(Boolean).length,
-    groupIds,
-    groupTitle: settings.groupTitle,
-  };
-  await chrome.storage.local.set({ lastScan: status });
-  return status;
+  return performScan(chrome, settings);
 }
 
 function scan() {
   if (!scanPromise) {
-    scanPromise = performScan().finally(() => {
+    scanPromise = scanChrome().finally(() => {
       scanPromise = null;
     });
   }
@@ -72,20 +27,42 @@ function scan() {
 
 function scheduleScan(delay = 250) {
   clearTimeout(scanTimer);
-  scanTimer = setTimeout(() => void scan(), delay);
+  scanTimer = setTimeout(() => void runBackgroundScan(), delay);
+}
+
+async function recordBackgroundError(error) {
+  const status = {
+    checkedAt: new Date().toISOString(),
+    error: error instanceof Error ? error.message : String(error),
+  };
+  console.error("Controlled-tab scan failed:", error);
+  try {
+    await chrome.storage.local.set({ lastScan: status });
+  } catch (storageError) {
+    console.error("Could not store controlled-tab scan failure:", storageError);
+  }
+  return status;
+}
+
+async function runBackgroundScan() {
+  try {
+    return await scan();
+  } catch (error) {
+    return recordBackgroundError(error);
+  }
 }
 
 async function initialize() {
   const existing = await chrome.storage.sync.get(DEFAULT_SETTINGS);
   await chrome.storage.sync.set(normalizeSettings(existing));
   await chrome.alarms.create(SCAN_ALARM, { periodInMinutes: SCAN_PERIOD_MINUTES });
-  await scan();
+  await runBackgroundScan();
 }
 
-chrome.runtime.onInstalled.addListener(() => void initialize());
-chrome.runtime.onStartup.addListener(() => void initialize());
+chrome.runtime.onInstalled.addListener(() => void initialize().catch(recordBackgroundError));
+chrome.runtime.onStartup.addListener(() => void initialize().catch(recordBackgroundError));
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === SCAN_ALARM) void scan();
+  if (alarm.name === SCAN_ALARM) void runBackgroundScan();
 });
 chrome.tabs.onActivated.addListener(() => scheduleScan(0));
 chrome.tabs.onCreated.addListener(() => scheduleScan());
@@ -98,10 +75,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "status") {
     chrome.storage.local
       .get({ lastScan: null })
-      .then(({ lastScan }) => sendResponse(lastScan));
+      .then(({ lastScan }) => sendResponse(lastScan))
+      .catch((error) => sendResponse({ error: String(error) }));
     return true;
   }
   return false;
 });
 
-void initialize();
+void initialize().catch(recordBackgroundError);

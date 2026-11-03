@@ -70,7 +70,7 @@ The extension declares:
 | --- | --- |
 | `debugger` | Calls `chrome.debugger.getTargets()` to identify page targets already attached by external automation. It never calls `attach()` or `sendCommand()`. |
 | `tabGroups` | Creates and names the visible controlled-tab group. |
-| `storage` | Stores the selected group/session title, color, collapsed state, and last scan status. |
+| `storage` | Stores the selected title/color/collapsed settings, last scan status, and current-session ownership of extension-created groups. |
 | `alarms` | Provides a periodic fallback scan for service-worker suspension. |
 
 There are no host permissions and no content scripts. The extension cannot read page DOM, cookies, form values, or network traffic through its implementation.

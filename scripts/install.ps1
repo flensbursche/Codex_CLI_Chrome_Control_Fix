@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
   [string]$McpVersion = '1.12.0',
+  [string]$ChromePath,
   [switch]$Apply
 )
 
@@ -17,12 +18,20 @@ function Require-Command([string]$Name) {
 $codex = Require-Command 'codex'
 $node = Require-Command 'node'
 $npx = Require-Command 'npx'
-$chromePath = Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe'
-if (-not (Test-Path -LiteralPath $chromePath)) {
-  throw "Chrome Stable was not found at '$chromePath'."
+if (-not $ChromePath) {
+  $chromeCandidates = @(
+    if ($env:ProgramFiles) { Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe' }
+    if (${env:ProgramFiles(x86)}) { Join-Path ${env:ProgramFiles(x86)} 'Google\Chrome\Application\chrome.exe' }
+    if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA 'Google\Chrome\Application\chrome.exe' }
+  )
+  $ChromePath = $chromeCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+}
+if (-not $ChromePath -or -not (Test-Path -LiteralPath $ChromePath)) {
+  throw 'Chrome Stable was not found in the machine-wide or user-local default locations. Pass -ChromePath explicitly for a custom installation.'
 }
 
-$chromeVersion = (Get-Item -LiteralPath $chromePath).VersionInfo.ProductVersion
+$ChromePath = (Resolve-Path -LiteralPath $ChromePath).Path
+$chromeVersion = (Get-Item -LiteralPath $ChromePath).VersionInfo.ProductVersion
 $chromeMajor = [int]($chromeVersion.Split('.')[0])
 if ($chromeMajor -lt 144) {
   throw "Chrome 144 or newer is required for auto-connect. Found $chromeVersion."

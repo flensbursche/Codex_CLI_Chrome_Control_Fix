@@ -7,7 +7,7 @@ The browser access host is unavailable
 Computer Use native pipe is unavailable
 ```
 
-This project does **not** patch or replace Codex. It adds the official Chrome DevTools MCP server to Codex CLI and offers two visible-tab workflows: an immediate manual grouping fallback that needs no extension, and a companion extension for automatic grouping after policy approval.
+This project does **not** patch or replace Codex. It adds the official Chrome DevTools MCP server to Codex CLI and offers two visible-tab workflows: an immediate manual grouping fallback that needs no extension, and a companion extension for automatic grouping after policy approval. The current project and extension version is `1.0.1`.
 
 ## What it solves
 
@@ -47,7 +47,7 @@ Existing Chrome profile ── controlled page targets
       and moves those tabs into a named Chrome tab group automatically
 ```
 
-The extension has no website host permissions. It uses the `debugger` permission only for `chrome.debugger.getTargets()`, then uses `chrome.tabs.group()` and `chrome.tabGroups.update()` to organize the returned tab IDs. It never attaches a debugger itself.
+The extension has no website host permissions. It uses the `debugger` permission only for `chrome.debugger.getTargets()`, then uses `chrome.tabs.group()` and `chrome.tabGroups.update()` to organize the returned tab IDs. It never attaches a debugger itself. Group IDs created by the extension are kept only for the current browser session, so an unrelated user group with the same title or a reused group ID from a later session is not claimed.
 
 | Path | Available immediately | Extension required | Grouping behavior | Best for |
 | --- | --- | --- | --- | --- |
@@ -61,7 +61,7 @@ The extension has no website host permissions. It uses the `debugger` permission
 ```powershell
 git clone https://github.com/flensbursche/Codex_CLI_Chrome_Control_Fix.git
 cd Codex_CLI_Chrome_Control_Fix
-npm test
+npm run check
 ```
 
 ### 1A. Install the reusable Codex skill
@@ -89,6 +89,8 @@ The setup is dry-run by default:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
+
+The installer checks the common machine-wide, 32-bit, and user-local Chrome locations. For a custom installation, pass `-ChromePath C:\path\to\chrome.exe`.
 
 Apply it explicitly:
 
@@ -169,7 +171,7 @@ This requires no extension, no administrator rights, and no policy change. Chrom
 7. Open its popup and set a title, for example `Codex CLI · EWS_Betriebsrat` or a Codex session title.
 8. Choose **Save & scan**.
 
-The extension scans immediately on browser startup, relevant tab activity, and at least every 30 seconds. **Scan now** provides an explicit readback.
+The extension scans immediately on browser startup, relevant tab activity, and at least every 30 seconds. **Scan now** provides an explicit readback. A failure in one Chrome window does not prevent healthy windows from being grouped; skipped tabs and partial failures are shown in the popup.
 
 If Chrome reports `Extension installation is blocked by policy`, stop. Do not remove or bypass the policy locally. Managed environments commonly combine `ExtensionInstallBlocklist = *` with an explicit allowlist and may also set `BlockExternalExtensions = 1`. Follow [Enterprise deployment](docs/ENTERPRISE-DEPLOYMENT.md) instead.
 
@@ -223,6 +225,7 @@ Restart Codex CLI after `codex mcp add`. MCP discovery happens when the Codex se
 2. Confirm the popup reports at least one controlled tab.
 3. Inspect the extension service worker from `chrome://extensions` for errors.
 4. Confirm the controlled target is a normal page tab. Workers and browser-internal targets are deliberately ignored.
+5. If the popup reports failed windows, inspect the extension service worker for the recorded per-window error.
 
 ### Extension installation is blocked by policy
 
@@ -230,7 +233,7 @@ Read [Enterprise deployment](docs/ENTERPRISE-DEPLOYMENT.md). The recommended org
 
 ### The group title is wrong
 
-Set the desired project or session title in the extension popup and choose **Save & scan**. Existing groups with that exact title are reused per browser window.
+Set the desired project or session title in the extension popup and choose **Save & scan**. The extension renames and reuses only groups that it created previously; same-titled user groups remain separate.
 
 ### Remove the workaround
 
@@ -256,4 +259,4 @@ Chrome's “controlled by automated test software” banner is a browser securit
 
 ## Status
 
-This is a community workaround, not an official OpenAI or Google product. Pinning the MCP package makes the tested setup reproducible; review upstream release notes before changing the version.
+This is a community workaround, not an official OpenAI or Google product. Pinning the MCP package makes the tested setup reproducible; review upstream release notes before changing the version. See [CHANGELOG.md](CHANGELOG.md) for release-level changes.

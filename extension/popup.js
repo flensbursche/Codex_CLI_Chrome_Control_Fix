@@ -12,11 +12,19 @@ function renderStatus(status) {
     statusOutput.textContent = `Scan failed: ${status.error}`;
     return;
   }
-  statusOutput.textContent = `${status.groupedTabCount} controlled tab(s) in “${status.groupTitle}”.`;
+  const details = [];
+  if (status.skippedTabCount) details.push(`${status.skippedTabCount} stale tab(s) skipped`);
+  if (status.failedWindowCount) details.push(`${status.failedWindowCount} window(s) failed`);
+  const suffix = details.length ? ` ${details.join("; ")}.` : "";
+  statusOutput.textContent = `${status.groupedTabCount} controlled tab(s) in “${status.groupTitle}”.${suffix}`;
 }
 
 async function scan() {
-  renderStatus(await chrome.runtime.sendMessage({ type: "scan" }));
+  try {
+    renderStatus(await chrome.runtime.sendMessage({ type: "scan" }));
+  } catch (error) {
+    renderStatus({ error: String(error) });
+  }
 }
 
 async function load() {
@@ -40,4 +48,4 @@ document.querySelector("#save").addEventListener("click", async () => {
 });
 
 document.querySelector("#scan").addEventListener("click", scan);
-void load();
+void load().catch((error) => renderStatus({ error: String(error) }));

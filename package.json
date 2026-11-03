@@ -1,11 +1,11 @@
 {
   "name": "codex-cli-chrome-control-fix",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Reproducible Codex CLI to Chrome control workaround with automatic controlled-tab grouping.",
   "scripts": {
     "test": "node --test test/*.test.cjs",
-    "check": "node --check extension/grouping.js && node --check extension/service-worker.js && node --check extension/popup.js && node --check scripts/mcp-smoke.cjs && npm test",
+    "check": "node --check extension/grouping.js && node --check extension/scanner.js && node --check extension/service-worker.js && node --check extension/popup.js && node --check scripts/mcp-smoke.cjs && npm test",
     "package:extension": "powershell -ExecutionPolicy Bypass -File scripts/package-extension.ps1"
   },
   "engines": {
