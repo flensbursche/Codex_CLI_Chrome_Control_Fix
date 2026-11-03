@@ -16,11 +16,12 @@ Date: 2026-11-03
 - Codex MCP entry enabled with auto-connect and privacy-focused flags.
 - Live MCP initialize, tool discovery, and `list_pages` call returned `status=pass`, `reason=chrome_connected`.
 - The MCP connection could inspect and operate an authenticated internal application tab after explicit Chrome approval.
+- The immediate fallback passed live: MCP `list_pages` identified the application page, `select_page` brought it to the foreground, and the user placed the active tab in a named Chrome group without an extension or policy change.
 - Application rollout through the browser UI completed source update, image build, container recreate, health smoke, and session smoke successfully.
 - Extension JavaScript syntax checks passed.
 - Three grouping unit tests passed.
 
-## Environment-specific blocker
+## Environment-specific automatic-path blocker
 
 The live extension grouping smoke could not run on the validation workstation because enterprise policy correctly rejected unpacked extension installation:
 
@@ -42,4 +43,4 @@ After Web Store publication or managed enterprise distribution:
 5. Verify **Scan now** reports the same controlled-tab count.
 6. Verify removal or policy rollback.
 
-Until this gate passes, automatic grouping is implemented and unit-tested but not claimed as live-accepted in the managed production Chrome profile.
+Until this gate passes, automatic grouping is implemented and unit-tested but not claimed as live-accepted in the managed production Chrome profile. The immediate manual grouping fallback is independently live-accepted and remains available.

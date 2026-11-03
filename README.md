@@ -7,7 +7,7 @@ The browser access host is unavailable
 Computer Use native pipe is unavailable
 ```
 
-This project does **not** patch or replace Codex. It adds the official Chrome DevTools MCP server to Codex CLI and includes a transparent Chrome extension that automatically places externally controlled tabs in a visible tab group.
+This project does **not** patch or replace Codex. It adds the official Chrome DevTools MCP server to Codex CLI and offers two visible-tab workflows: an immediate manual grouping fallback that needs no extension, and a companion extension for automatic grouping after policy approval.
 
 ## What it solves
 
@@ -42,11 +42,17 @@ chrome-devtools-mcp
    ▼
 Existing Chrome profile ── controlled page targets
    │
-   └─ Companion extension observes attached target IDs
-      and moves those tabs into a named Chrome tab group
+   ├─ Immediate path: Codex selects the target; the user groups it once
+   └─ Managed path: companion extension observes attached target IDs
+      and moves those tabs into a named Chrome tab group automatically
 ```
 
 The extension has no website host permissions. It uses the `debugger` permission only for `chrome.debugger.getTargets()`, then uses `chrome.tabs.group()` and `chrome.tabGroups.update()` to organize the returned tab IDs. It never attaches a debugger itself.
+
+| Path | Available immediately | Extension required | Grouping behavior | Best for |
+| --- | --- | --- | --- | --- |
+| Manual fallback | Yes | No | User groups the Codex-selected tab once | Locked-down Chrome and immediate use |
+| Managed extension | After installation approval | Yes | Attached page tabs are grouped automatically | Recurring use and many concurrent sessions |
 
 ## Quick start
 
@@ -105,7 +111,20 @@ Get-ItemProperty 'HKLM:\SOFTWARE\Policies\Google\Chrome' -Name RemoteDebuggingAl
 
 `RemoteDebuggingAllowed = 0` blocks auto-connect and `--remote-debugging-port`. Ask the responsible administrator to enable the policy. Do not bypass enterprise policy locally.
 
-### 4. Install automatic controlled-tab grouping
+### 4A. Use the immediate manual grouping fallback
+
+Use this path when extension installation is blocked or has not yet been approved:
+
+1. Ask Codex to call `list_pages` through the Chrome DevTools MCP server.
+2. Ask Codex to select the intended page with `select_page` and `bringToFront=true`.
+3. Confirm that the intended tab is active in Chrome.
+4. Right-click that tab and choose **Add tab to new group**.
+5. Name the group `Codex CLI · <project or session>` and choose a visible color.
+6. Ask Codex to reuse that selected tab for the rest of the session.
+
+This requires no extension, no administrator rights, and no policy change. Chrome DevTools can select the controlled page but cannot create a Chrome tab group, so the one grouping action remains deliberately user-driven. See [Immediate manual grouping](docs/IMMEDIATE-MANUAL-GROUPING.md) for the operator runbook and a reusable Codex prompt.
+
+### 4B. Install automatic controlled-tab grouping
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
@@ -139,7 +158,7 @@ Chrome should ask for connection approval. After **Allow**, a successful result 
 }
 ```
 
-The controlled page should appear in the configured Chrome tab group.
+With the extension path, the controlled page should appear in the configured Chrome tab group automatically. With the manual path, run the grouping step after the smoke has selected or exposed the controlled tab.
 
 ## Privacy-focused defaults
 
